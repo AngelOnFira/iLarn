@@ -1,0 +1,107 @@
+Features I want:
+	message log like iRogue.  copy splash foo into it.
+	use drugs,lamp from inventory???
+	smart corner-cutting run from Moria (need a higher 'lookahead'..)
+Bugs:
+	drop an item, wait (taptap), you see the item and not you
+	monsters walk into south wall in dungeon, get stuck
+	wandering monsters 'appeared' in walls - fixed
+	potions dissolve walls in town - fixed
+Left out:
+	"name" in preferences
+	mail when you win, or todo item during game
+	name of player's experience level is never used
+Missing:
+	does the genie work? no?
+	reselling drugs?
+	home text if you win or lose
+Ok:  Direction buttons form.  Stores.  Saving/restoring visited level.
+     Restoring visited level.  Saving/restoring character.
+     Known-item list 'D'
+     Reading map from database
+ok:
+  formerly missing commands e.g. 'tax status'
+  pulverization
+  annihilation
+  Indication of active spells!!
+  Death, new character, non-winner scoreboard - basically works
+  keyboard support (a little bit)
+  made the inventory show the time remaining
+  Winner scoreboard.  LRS reads from it.
+  Made the level saves more compact!
+  got genocide working
+
+
+Old notes:
+
+How about saving character: 
+   in saving levels, I take care of iarg, hitp, item, know, mitem.
+   this leaves:
+        'stealth' should be set to 0 when you re-enter a level, probably,
+        but alas should be remembered otherwise.  no need for 'moved' though
+		hm I only NEED fifteen rows of 'stealth' (skip top&bottom)
+		and 65 columns.. so that makes.. 130 bytes? sheesh 1/8 K.
+	cdude, iven, ivenarg, spelknow, beenhere, char_class;
+        400 B + 26 B + 52 B  +  39 bits +  21 bits +  20 B = 498B + 60b = 503B.
+        and finally the back end of 'everything' (8 + 12 + 5) = 528 B total.
+	so not all that much really.  another half-K.  cool.
+   just remember to make like you're saving the level, and dump that half K too
+   oh I suppose restoring might be a little tedious too
+
+BUGS:  when you stop running due to finding a cross-passage, monsters hit you
+(like if you are running away from them)
+tried to fix in moveplayer.c, maybe it worked
+
+Hey that add-splash puppy needs work.  Pops up when it !should and vice versy.
+
+direction buttons:
+
+A few things save their 'task' and popup the direction selector.
+Its handler should read 'task' and dispatch to one of:
+...
+DIR_MAKEWALL -> void makewall(Short x, Short y, struct everything *env)
+DIR_TDIRECT -> void tdirect(Short x, Short y, struct everything *env)
+DIR_POLY -> void dirpoly(Short x, Short y, struct everything *env)
+DIR_DIRECT -> void direct_helper(Short x, Short y, struct everything *env)
+DIR_GODIRECT -> void godirect_helper(Short dx, Short dy,struct everything *env)
+...
+They all take a dungeon-absolute coordinate in (x,y): this is a cell
+that is one of the eight adjacent to the player's location.
+(The last, godirect_helper, would prefer to just have the offset
+(-1/0/1, -1/0/1), which is probably on hand but cheap to recalc.)
+...
+Basically IF you are clever in numbering the buttons, you can read off
+the (-1/0/1, -1/0/1) from diroffx/diroffy arrays in moveplayer.c, 
+(directions are defined in Globals.h) then add that offset to
+(playerx, playery), and call the right 'task' handler.
+Yeah, let's do that.  [Another day.  Tonight I am going to sleep]
+
+A stack of things on the side to do (these are not yet done)
+   I think I may need to fix the splashthing so that it does "--more--"like.
+   give it up to 12 virtual lines, use them up 3 at a time
+   (the handler should call a method to see if there are more,
+	which will display more and return true, or do nothing and ret false
+    if false, leave the window.)
+   ALSO I think I will have to change the pie to not use the bottom 3 lines.
+   ALSO let's use the 'max' and 'min' macros since I have them!
+		movem.c
+
+old goal: find 'odd' error - ok, I fixed it.  memo to self:
+	a 'break' in a for loop is fine and dandy until you put
+	another for loop around it (and forget to leave BOTH.)
+
+Max Char  = 255   (1 8-bit byte) 2^8
+Max Short = 65535 (2 bytes)      2^16
+Max WhateverIsNext ~= 4 000 000 000 (4 bytes) 2^32   that's a 'long'
+  so 10 digits is enough to print a long, then.
+
+"32767000L" > 32 million so I need an int or something.  sigh.
+
+
+http://www.angelfire.com/oh/claremansfield/gross.html
+
+
+(* 65536.0  65536.0 )
+4,294,967,296.0
+
+

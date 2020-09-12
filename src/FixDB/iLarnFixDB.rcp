@@ -1,0 +1,64 @@
+//********************************************************************
+// iLarn - Ularn adapted for the PalmPilot.                          *
+// Copyright (C) 2000 Bridget Spitznagel                             *
+// iLarn is derived from Ularn by Phil Cordier                       *
+// which in turn was based on Larn by Noah Morgan                    *
+//                                                                   *
+// This program is free software; you can redistribute it and/or     *
+// modify it under the terms of the GNU General Public License       *
+// as published by the Free Software Foundation; either version 2    *
+// of the License, or (at your option) any later version.            *
+//                                                                   *
+// This program is distributed in the hope that it will be useful,   *
+// but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the     *
+// GNU General Public License for more details.                      *
+//                                                                   *
+// You should have received a copy of the GNU General Public License *
+// along with this program; if not, write to                         *
+// The Free Software Foundation, Inc.,                               *
+// 59 Temple Place - Suite 330,                                      *
+// Boston, MA  02111-1307, USA.                                      *
+//********************************************************************
+
+#include "iLarnFixDBRsc.h"
+
+VERSION ID 1 "0.01"
+
+ICON "iLarn2.bmp"
+SMALLICON "iLarnSmall.bmp"
+
+FORM ID MainForm AT (0 0 160 160)
+USABLE
+NOFRAME
+BEGIN
+	TITLE "'Fix' iLarn Database"
+	BUTTON "Rebuild Database" ID btn_ok AT (50 50 AUTO AUTO) USABLE
+	BUTTON "Print ROM #" ID btn_rom AT (50 70 AUTO AUTO) USABLE
+END
+
+STRING HelpStr "This will rebuild your database."\
+		"It wipes out your top ten list and saved character!"
+
+BITMAP ID bitmap_iLarn "iLarn2.bmp"
+BITMAP ID bitmap_cat "hdse.bmp"
+
+ALERT ID NukeP
+WARNING
+BEGIN
+	TITLE "Are you sure?"
+	MESSAGE "Rebuilding the database will wipe out your top ten list."
+	BUTTON "I'm sure" "No, don't do it!"
+END
+
+STRING AboutStr "iLarn version 0.16\n"\
+                "© 2000 Bridget Spitznagel.\n\n"\
+                "This program was derived "\
+                "from Ularn.\n\n"\
+                "iLarn comes with Absolutely No Warranty.\n"\
+                "This is free software, and "\
+                "you are welcome to "\
+                "redistribute it under certain "\
+                "conditions (for details see: GNU "\
+                "General Public License,\n"\
+                "http://www.gnu.org/ copyleft/gpl.html)"

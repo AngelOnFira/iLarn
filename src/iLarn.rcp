@@ -1,0 +1,597 @@
+//********************************************************************
+// iLarn - Ularn adapted for the PalmPilot.                          *
+// Copyright (C) 2000 Bridget Spitznagel                             *
+// iLarn is derived from Ularn by Phil Cordier                       *
+// which in turn was based on Larn by Noah Morgan                    *
+//                                                                   *
+// This program is free software; you can redistribute it and/or     *
+// modify it under the terms of the GNU General Public License       *
+// as published by the Free Software Foundation; either version 2    *
+// of the License, or (at your option) any later version.            *
+//                                                                   *
+// This program is distributed in the hope that it will be useful,   *
+// but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the     *
+// GNU General Public License for more details.                      *
+//                                                                   *
+// You should have received a copy of the GNU General Public License *
+// along with this program; if not, write to                         *
+// The Free Software Foundation, Inc.,                               *
+// 59 Temple Place - Suite 330,                                      *
+// Boston, MA  02111-1307, USA.                                      *
+//********************************************************************
+
+#include "iLarnRsc.h"
+
+VERSION ID 1 "0.30"
+
+//ICON "iLarn2.bmp"
+//SMALLICON "iLarnSmall.bmp"
+ICONFAMILY "iLarn.bmp" "" "" "iLarnC.bmp" TRANSPARENT 255 255 255
+SMALLICONFAMILY "iLarnSmall.bmp" "" "" "iLarnSmallC.bmp" TRANSPARENT 255 255 255
+
+// Changed from 128 to 129.  Let's see if this fixes Kyocera's wagon.
+FONT ID ItsyFont FONTID 129 "Font56.txt"
+
+FORM ID MainForm AT (0 0 160 160)
+USABLE
+NOFRAME
+MENUID MainFormMenu
+BEGIN
+    GRAFFITISTATEINDICATOR AT (150 150)
+END
+
+//        MENUITEM "Toggle Debug  "           ID menu_mainWiz
+//	MENUITEM "Scroll View " ID  menu_mainScroll "V"
+//	MENUITEM "Graffiti Help "        ID menu_mainGraffiti "G"
+MENU ID MainFormMenu
+BEGIN
+    PULLDOWN "Options"
+    BEGIN
+        MENUITEM "Map  "           ID menu_mainMap "M"
+	MENUITEM "Message Log   "          ID menu_mainMsgs "L"
+	MENUITEM "Re-Center" ID  menu_mainCenter "C"
+	MENUITEM "Change Font" ID  menu_main_test "F"
+	MENUITEM SEPARATOR
+        MENUITEM "High Scores"       ID menu_mainScores
+        MENUITEM "Clone Me"       ID menu_mainSketch
+	MENUITEM SEPARATOR
+	MENUITEM "(Q)  QUIT" ID  menu_cmd_quit
+    END
+    PULLDOWN "Commands"
+    BEGIN
+	MENUITEM "(i)    Inventory..." ID  menu_cmd_i
+	MENUITEM "(t)   Take off armor" ID  menu_cmd_t
+	MENUITEM SEPARATOR
+	MENUITEM "(c)   Cast spell" ID  menu_cmd_c
+	MENUITEM "(d)   Known items" ID  menu_cmd_d
+	MENUITEM SEPARATOR
+	MENUITEM "(.)    Rest" ID  menu_cmd_rest
+	MENUITEM "(^)   ID trap" ID  menu_cmd_trap
+	MENUITEM "(F)   Fight" ID  menu_cmd_F
+	MENUITEM "(Z)   Teleport" ID  menu_cmd_Z
+	MENUITEM SEPARATOR
+	MENUITEM "($)   Drop gold" ID  menu_cmd_gold
+	MENUITEM "(w)   Pack weight" ID  menu_cmd_w
+	MENUITEM "(s)   Tax status" ID  menu_cmd_s
+    END
+    PULLDOWN "iLarn"
+    BEGIN
+	MENUITEM "Instructions   "      ID menu_mainMoveInstruct
+        MENUITEM "About iLarn   "       ID menu_mainAbout
+	MENUITEM SEPARATOR
+        MENUITEM "Preferences   "        ID menu_mainSettings "R"
+        MENUITEM "Bindings   "        ID menu_mainButtons "B"
+	MENUITEM SEPARATOR
+        MENUITEM "Beam iLarn!"       ID menu_mainBeam
+    END
+END
+//    PULLDOWN "Wiz"
+//    BEGIN
+//	MENUITEM "Enlight" ID  menu_main_wiz1
+//	MENUITEM "XP" ID  menu_main_wiz2
+//	MENUITEM "Up" ID  menu_main_wiz3
+//	MENUITEM "Down" ID  menu_main_wiz4
+//    END
+
+
+
+FORM ID MapForm AT (0 0 160 160)
+USABLE
+NOFRAME
+BEGIN
+END
+
+
+STRING IntroStr "Welcome to the game of Ularn.  At this moment, you "\
+		"face a great problem.  Your daughter has contracted a "\
+		"strange disease, and none of your home remedies seem "\
+		"to have any effect.  You sense that she is in mortal "\
+		"danger, and you must try to save her.  Time ago you "\
+		"heard of a land of great danger and opportunity. "\
+		"Perhaps here is the solution you need.\n"\
+		"It has been said that there once was a great magician "\
+		"who called himself Polinneaus.  Many years ago, after "\
+		"having many miraculous successes, Polinneaus retired "\
+		"to the caverns of Ularn, where he devoted most of his "\
+		"time to the creation of magic.  Rumors have it that "\
+		"one day Polinneaus set out to dispel an attacking "\
+		"army in a forest some distance to the north.  It is "\
+		"believed that here he met his demise.\n"\
+		"The caverns of Ularn, it is thought, must be "\
+		"magnificent in design, and contain much magic and "\
+		"treasure.  One option you have is to undertake a "\
+		"journey into these caverns.\n"\
+		"Good Luck!  (You're going to need it.)"
+
+//static char copyright[]=
+//  "\nUlarn was created by Phil Cordier and is based on Larn by Noah Morgan\n";
+//                lprintf( "\nThe Addiction of Ularn, by Satyr. Difficulty : %d",
+//	                (long)c[HARDGAME]);
+//                if (wizard) lprcat(" (WIZARD)");
+//                nomove=1;
+//                if (cheat) lprcat(" (Cheater)");
+//                lprcat(copyright); 
+
+
+
+
+
+BITMAP ID bitmap_iLarn "iLarn.bmp"
+BITMAP ID bitmap_cat "hdse.bmp"
+
+//FORM ID QuestionForm AT (2 126 156 32)
+FORM ID QuestionForm AT (2 115 156 32)
+USABLE
+MODAL
+DEFAULTBTNID btn_qst_ign
+BEGIN
+	BUTTON "One" ID btn_qst_1 AT (2 2 74 AUTO) NONUSABLE
+	BUTTON "Two" ID btn_qst_2 AT (PrevRight+4 PrevTop PrevWidth AUTO) NONUSABLE
+	BUTTON "Three" ID btn_qst_3 AT (2 PrevBottom+4 PrevWidth AUTO) NONUSABLE
+	BUTTON "Ignore" ID btn_qst_ign AT (PrevRight+4 PrevTop PrevWidth AUTO) NONUSABLE
+END
+
+// for printing messages on; click and it goes away.
+FORM ID SplashForm AT (1 126 158 33)
+USABLE
+MODAL
+BEGIN
+END
+
+FORM ID AboutForm AT (2 2 156 156)
+USABLE
+MODAL
+HELPID AboutStr
+DEFAULTBTNID btn_about_ok
+BEGIN
+	TITLE "About iLarn"
+	FORMBITMAP AT (8 19) BITMAP bitmap_cat
+	FORMBITMAP AT (98 15) BITMAP bitmap_iLarn
+	LABEL "iLarn v0.30" AUTOID AT (90 40)
+	LABEL "Based on Ularn" AUTOID AT (PrevLeft-6 PrevTop+11)
+
+	LABEL "Bugs?  Contact:" AUTOID AT (Center 95)
+	LABEL "Bridget Spitznagel" AUTOID AT (Center PrevTop+11)
+        LABEL "i0lanthe@yahoo.com" AUTOID AT (Center PrevTop+11)
+	BUTTON "Done" ID btn_about_ok AT (5 141 35 AUTO)
+	BUTTON "License" ID btn_about_more AT (50 141 AUTO AUTO)
+	BUTTON "Credits" ID btn_about_credits AT (PrevRight+10 141 AUTO AUTO)
+END
+
+ALERT ID QuitP
+WARNING
+BEGIN
+	TITLE "Really Quit?"
+	MESSAGE "Do you really want to quit?  This will kill your current character."
+	BUTTON "Ok" "No, don't quit!"
+END
+
+STRING CloneStr "If you are an inexperienced player, "\
+	"you can make a clone of your character.  "\
+	"Only one clone can exist at a time. "\
+	"The clone can be revived only in Character Generation (instead "\
+	"of creating a new character) and the clone record is destroyed "\
+	"when the clone is revived.\n"\
+	"Cloning is enabled for Difficulty Level 0 only, for "\
+	"the benefit of beginners.\n\n"\
+	"It is not possible to clone the Eye of Larn or the potion of "\
+	"Cure Dianthroritis.  "\
+	"Also, clones are destroyed when any character wins."
+
+ALERT ID CloneP
+CONFIRMATION
+HELPID CloneStr
+BEGIN
+	TITLE "Send In The Clones"
+	MESSAGE "Tap Ok to ^1"
+	BUTTON "Ok" "Cancel"
+END
+
+ALERT ID BeamNextP
+CONFIRMATION
+DEFAULTBUTTON 1
+BEGIN
+	TITLE "Ready?"
+	MESSAGE "Ready to beam the next piece?"
+	BUTTON "Ok" "Cancel"
+END
+
+ALERT ID NoCloneP
+INFORMATION
+HELPID CloneStr
+BEGIN
+	TITLE "The gloves are off"
+	MESSAGE "Cloning is enabled for Difficulty Level 0 only.  "\
+	"Your current DL is: ^1."
+	BUTTON "Ok"
+END
+
+//                "(as Ularn) © 1986 Noah Morgan, Phil Cordier\n\n"\
+STRING AboutStr "iLarn version 0.30\n"\
+                "© 2000 "\
+                "Noah Morgan, Phil Cordier, Bridget Spitznagel\n\n"\
+                "iLarn comes with Absolutely No Warranty.\n"\
+                "This is free software, and "\
+                "you are welcome to "\
+                "redistribute it under certain "\
+                "conditions (for details see: GNU "\
+                "General Public License,\n"\
+                "http://www.gnu.org/ copyleft/gpl.html)"
+
+// Note: Ularn, so I'm told, got GPL-infected, in the 1992 version?,
+//  by Phil Cordier's inclusion of "getopt" stuff.
+
+
+
+// Nikolai Ivanovitch Lobachevski is his name, hey!
+//
+STRING CreditStr "Larn was written by Noah Morgan in 1986.  "\
+		"Ularn, \"Ultra-Larn\", by Phil Cordier, is based on "\
+		"Larn and was created in 1989 or so.  "\
+		"(iLarn is a port of Ularn, so, you have these folks "\
+		"to thank or blame for its existence.)\n"\
+		"Ularn is now maintained by Josh Brandt.\n"\
+		"Thanks also to "\
+		"intrepid testers and reporters of bugs.\n"\
+		"- Bridget Spitznagel"
+// Note: I worked from whatever version was at ftp.win.tue.nl;
+// it may not have been the most recent that JB is now maintaining
+// from, but, that's the way the cookie bounces
+
+
+
+//STRING LoseStr "Congratulations.  You found the potion of cure dianthroritis!"\
+//"Frankly, No one thought you could do it.  Boy!  Did you surprise them!"\
+//"However... the doctor has the sad duty to inform you that your daughter has died!"\
+//"You didn't make it in time.  In your agony, you kill the doctor,"\
+//"your wife, and yourself!  Too bad..."
+//STRING WinStr
+//"The doctor is now administering the potion, and in a few moments"\
+//"your daughter should be well on her way to recovery."\
+//"The potion is"\
+//" working!  The doctor thinks that"\
+//"your daughter will recover in a few days.  Congratulations!"
+
+
+//HELPID PickChStr
+//DEFAULTBTNID btn_pickch_ok
+
+FORM ID PickChForm AT (1 1 158 158)
+USABLE
+BEGIN
+	TITLE "Design a character..."
+        PUSHBUTTON "Ogre" ID pbtn_pickch_0 AT (14 28 40 24) USABLE GROUP 1
+        PUSHBUTTON "Wizard" ID pbtn_pickch_1 AT (PrevLeft PrevBottom+1 PrevWidth PrevHeight) USABLE GROUP 1
+        PUSHBUTTON "Klingon" ID pbtn_pickch_2 AT (PrevLeft PrevBottom+1 PrevWidth PrevHeight) USABLE GROUP 1
+        PUSHBUTTON "Elf" ID pbtn_pickch_3 AT (PrevLeft PrevBottom+1 PrevWidth PrevHeight) USABLE GROUP 1
+        PUSHBUTTON "Rogue" ID pbtn_pickch_4 AT (PrevRight+1 28 PrevWidth PrevHeight) USABLE GROUP 1
+        PUSHBUTTON "Geek" ID pbtn_pickch_5 AT (PrevLeft PrevBottom+1 PrevWidth PrevHeight) USABLE GROUP 1
+        PUSHBUTTON "Dwarf" ID pbtn_pickch_6 AT (PrevLeft PrevBottom+1 PrevWidth PrevHeight) USABLE GROUP 1
+        PUSHBUTTON "Rambo" ID pbtn_pickch_7 AT (PrevLeft PrevBottom+1 PrevWidth PrevHeight) USABLE GROUP 1
+
+        PUSHBUTTON "male" ID pbtn_pickch_m AT (PrevRight+10 28+PrevHeight PrevWidth PrevHeight) USABLE GROUP 2
+        PUSHBUTTON "female" ID pbtn_pickch_f AT (PrevLeft PrevBottom+1 PrevWidth PrevHeight) USABLE GROUP 2
+
+	BUTTON "Difficulty" ID btn_pickch_dif AT (PrevLeft-3 17 PrevWidth+6 AUTO) NONUSABLE
+        POPUPTRIGGER "0" ID popup_pickch AT (PrevLeft PrevBottom+1 20 AUTO) LEFTANCHOR NONUSABLE
+        LIST "0" ID list_pickch AT (PrevLeft PrevTop 20 1) NONUSABLE VISIBLEITEMS 1
+        POPUPLIST ID popup_pickch list_pickch
+
+	BUTTON "So, what are ya?" ID btn_pickch_ok AT (5 141 150 AUTO) NONUSABLE
+	BUTTON "Generate" ID btn_pickch_gen AT (5 141 AUTO AUTO) NONUSABLE
+	BUTTON "No, Use My Clone" ID btn_pickch_snap AT (PrevRight+10 PrevTop AUTO AUTO) NONUSABLE
+END
+
+//FORM ID CastForm AT (2 2 156 156)
+//USABLE
+//MODAL
+//DEFAULTBTNID btn_ca_cancel
+//BEGIN
+//END
+
+//	LIST "foo" "bar" "baz" ID list_ca AT (0 15 160 121)
+FORM ID CastForm AT (2 2 156 156)
+USABLE
+MODAL
+DEFAULTBTNID btn_ca_cancel
+BEGIN
+	TITLE "Cast Which Spell? "
+	LIST "foo" "bar" "baz" ID list_ca AT (0 15 156 121)
+	BUTTON "Ok" ID btn_ca_ok AT (5 141 31 AUTO)
+	BUTTON "Cancel" ID btn_ca_cancel AT (PrevRight+5 PrevTop 35 PrevHeight)
+END
+
+// HELPID InvStr
+FORM ID InvSelectForm AT (2 2 156 156)
+USABLE
+MODAL
+DEFAULTBTNID btn_i_cancel
+BEGIN
+	TITLE "Select From Inventory"
+	LIST "foo" "bar" "baz" ID list_i AT (0 15 156 121)
+
+	BUTTON "DWIM" ID btn_if_frob AT (5 141 31 AUTO) NONUSABLE
+	BUTTON "drop" ID btn_if_drop AT (PrevRight+5 PrevTop PrevWidth PrevHeight) NONUSABLE
+	BUTTON "wield" ID btn_if_wield AT (PrevRight+5 PrevTop PrevWidth PrevHeight) NONUSABLE
+	BUTTON "Cancel" ID btn_i_cancel AT (PrevRight+5 PrevTop 35 PrevHeight)
+
+END
+//	BUTTON "Ok" ID btn_i_ok AT (5 141 35 AUTO)
+//	LIST "foo" "bar" "baz" ID list_i AT (0 15 122 121)
+
+
+
+//dnd_2hed()
+//{
+//  lprcat("Welcome to the Ularn Thrift Shoppe.  We stock many items explorers find useful\n");
+//  lprcat("in their adventures.  Feel free to browse to your hearts content.\n");
+//  lprcat("Also be advised, if you break 'em, you pay for 'em.");
+//}
+
+
+FORM ID StoreForm AT (2 2 156 156)
+USABLE
+MODAL
+DEFAULTBTNID btn_st_exit
+BEGIN
+   TITLE "                            "
+   LIST " " " " " " " " " " " " " " " " " " " " ID list_st AT (0 15 124 110)
+
+   BUTTON "      " ID btn_st_sell AT (5 141 35 AUTO)
+   BUTTON "< -" ID btn_st_prev AT (53 141 20 AUTO)
+   BUTTON "+ >" ID btn_st_next AT (83 141 20 AUTO)
+   BUTTON "Transaction" ID btn_st_trans AT (50 141 60 AUTO) NONUSABLE
+   BUTTON "Exit" ID btn_st_exit AT (118 141 35 PrevHeight)
+END
+
+//FORM ID QuestionForm AT (2 126 156 32)
+FORM ID TransForm AT (2 102 156 56)
+USABLE
+MODAL
+DEFAULTBTNID btn_trans_cancel
+BEGIN
+   TITLE "Bank Transaction"
+   FIELD ID fld_trans_amt AT (60 25 50 AUTO) USABLE RIGHTALIGN EDITABLE UNDERLINED SINGLELINE MAXCHARS 10
+   BUTTON "[=]" ID btn_trans_alld AT (5 PrevTop 15 AUTO) NOFRAME
+   LABEL "Amount:" AUTOID AT (25 PrevTop)
+   BUTTON "[=]" ID btn_trans_allw AT (140 PrevTop 15 AUTO) NOFRAME
+   BUTTON "Deposit" ID btn_trans_dp AT (5 PrevTop+16 35 AUTO)
+   BUTTON "Withdraw" ID btn_trans_wd AT (58 PrevTop 44 PrevHeight)
+   BUTTON "Cancel" ID btn_trans_cancel AT (118 PrevTop 35 PrevHeight)
+END
+//   LABEL "In bank:" AUTOID AT (5 13)
+//   LABEL "Pocket:" AUTOID AT (80 PrevTop)
+//  I can make the field 'NUMERIC' but it "doesn't work in PalmOS 1 or 2"
+
+// but.. remember to make the same form usable for "drop gold" !!!!
+// field resource.. max chars = # digits in Long
+
+
+FORM ID LrsForm AT (2 2 156 156)
+USABLE
+MODAL
+DEFAULTBTNID btn_lrs_cancel
+BEGIN
+   TITLE "Larn Revenue Service"
+
+   LABEL "Welcome to the LRS district office." AUTOID AT (5 12)
+   LABEL "How may we help you?" AUTOID AT (5 23)
+
+   LABEL "Here are your payment options:" AUTOID AT (5 93)
+
+   BUTTON "Pay Cash" ID btn_lrs_dp AT (5 109 45 AUTO) NONUSABLE
+   FIELD ID fld_lrs_amt AT (PrevRight+50 PrevTop 50 AUTO) USABLE RIGHTALIGN EDITABLE UNDERLINED SINGLELINE MAXCHARS 10
+   BUTTON "Request Bank Transfer" ID btn_lrs_wd AT (5 125 Auto Auto) NONUSABLE
+   BUTTON "Exit" ID btn_lrs_cancel AT (118 141 35 Auto)
+END
+//   BUTTON "Bank Xfer" ID btn_lrs_wd AT (58 PrevTop 44 PrevHeight)
+//   LABEL "Amount:" AUTOID AT (PrevRight+5 PrevTop)
+
+FORM ID EvaderForm AT (2 2 156 156)
+USABLE
+MODAL
+DEFAULTBTNID btn_eva_exit
+BEGIN
+   TITLE "                            "
+   BUTTON "Exit" ID btn_eva_exit AT (118 141 35 Auto)
+END
+
+// LABEL "Outside donut:" AUTOID AT (PrevLeft PrevTop+15)
+
+FORM ID PrefsForm AT (2 2 156 156)
+USABLE
+MODAL
+DEFAULTBTNID btn_bul_cancel
+BEGIN
+ TITLE "Various Settings"
+
+ LABEL "Difficulty:" AUTOID AT (100 14)
+ LABEL "Player name:" AUTOID AT (3 14)
+ FIELD ID field_usr AT (PrevLeft PrevTop+11 146 11) EDITABLE
+	SINGLELINE UNDERLINED MAXCHARS NAMELEN
+
+ CHECKBOX "Sound." ID check_bul_5    AT (1 PrevTop+17 AUTO AUTO)
+
+ CHECKBOX "Big font." ID check_bul_3 AT (PrevLeft PrevTop+15 AUTO AUTO)
+ CHECKBOX "Centered." ID check_bul_2 AT (PrevLeft PrevTop+11 AUTO AUTO)
+ CHECKBOX "Relative move." ID check_bul_4 AT (PrevLeft PrevTop+11 AUTO AUTO)
+
+ CHECKBOX "Invert" ID check_bul_8 AT (PrevLeft PrevTop+15 AUTO AUTO)
+ CHECKBOX "Color!" ID check_bul_9 AT (PrevLeft PrevTop+11 AUTO AUTO) NONUSABLE
+
+ CHECKBOX "Run." ID check_bul_1 AT (80+5 109+11 AUTO AUTO)
+ CHECKBOX "Discretion" ID check_bul_7 AT (PrevLeft PrevTop+11 AUTO AUTO)
+ LABEL "(> part of valor)" AUTOID AT (PrevLeft PrevTop+10)
+
+
+ BUTTON "Ok" ID btn_bul_ok AT (2 141 35 AUTO)
+ BUTTON "Cancel" ID btn_bul_cancel AT (PrevRight+7 PrevTop 35 AUTO)
+
+
+ BUTTON "Draw" ID btn_bul_draw AT (83 28+11 30 AUTO)
+ LABEL "No-Op" AUTOID AT (PrevLeft PrevTop+13)
+ LABEL "(hole)" AUTOID AT (PrevLeft PrevTop+10)
+ LIST "10" "20" "30" "40" ID list_bul_1 AT (PrevLeft+4 PrevBottom 15 44) 
+	VISIBLEITEMS 4
+
+ BUTTON "Clear" ID btn_bul_clear AT (118 28+11 30 AUTO)
+ LABEL "Walk" AUTOID AT (PrevLeft PrevTop+13)
+ LABEL "(donut)" AUTOID AT (PrevLeft PrevTop+10)
+ LIST "10" "20" "30" "40" ID list_bul_2 AT (PrevLeft+4 PrevBottom 15 44) 
+	VISIBLEITEMS 4
+
+
+END
+
+
+STRING ButtonsStr "You can re-bind hardware buttons at whim, more or less. "\
+		"Your settings will be remembered but will not be USED "\
+		"unless you check 'rebind these buttons'.  "\
+		"Anything set to '---' will just do what it normally would.  "\
+		"You can also check 'enable keyboard' which will allow you "\
+		"to use the hjklyubn keys to move; leave them disabled if "\
+		"you are using Graffiti, to avoid recognition mistakes."
+
+
+FORM ID HwButtonsForm AT (2 2 156 156)
+USABLE
+MODAL
+HELPID ButtonsStr
+DEFAULTBTNID btn_hwb_cancel
+BEGIN
+	TITLE "Rebind Buttons"
+	BUTTON "Ok" ID btn_hwb_ok AT (5 141 35 AUTO)
+	BUTTON "Cancel" ID btn_hwb_cancel AT (PrevRight+7 PrevTop 35 AUTO)
+
+	CHECKBOX "Enable hjklyubn for keyboard" ID check_hwb_keyb AT (4 15 AUTO AUTO)
+	CHECKBOX "Rebind these buttons:" ID check_hwb AT (4 PrevTop+17 AUTO AUTO)
+
+	LABEL "Date Book" AUTOID AT (4 45)
+        POPUPTRIGGER "---" ID popup_hwb_1 AT (47 PrevTop 70 AUTO) LEFTANCHOR
+        LIST "---" "south" "east" "north" "west" "cast spell" "rest" "map" "change font" "known items" "teleport" "inventory" ID list_hwb_1 AT (PrevLeft PrevTop 58 1) NONUSABLE VISIBLEITEMS 12
+
+	LABEL "Address" AUTOID AT (4 PrevTop+12)
+        POPUPTRIGGER "---" ID popup_hwb_2 AT (47 PrevTop 70 AUTO) LEFTANCHOR
+        LIST "---" "south" "east" "north" "west" "cast spell" "rest" "map" "change font" "known items" "teleport" "inventory" ID list_hwb_2 AT (PrevLeft PrevTop 58 1) NONUSABLE VISIBLEITEMS 12
+
+	LABEL "Up" AUTOID AT (40 PrevTop+12)
+        POPUPTRIGGER "---" ID popup_hwb_5 AT (62 PrevTop 70 AUTO) LEFTANCHOR
+        LIST "---" "south" "east" "north" "west" "cast spell" "rest" "map" "change font" "known items" "teleport" "inventory" ID list_hwb_5 AT (PrevLeft PrevTop 58 1) NONUSABLE VISIBLEITEMS 12
+
+	LABEL "Down" AUTOID AT (40 PrevTop+12)
+        POPUPTRIGGER "---" ID popup_hwb_6 AT (PrevRight PrevTop 70 AUTO) LEFTANCHOR
+        LIST "---" "south" "east" "north" "west" "cast spell" "rest" "map" "change font" "known items" "teleport" "inventory" ID list_hwb_6 AT (PrevLeft PrevTop 58 1) NONUSABLE VISIBLEITEMS 12
+
+	LABEL "To Do List" AUTOID AT (4 PrevTop+12)
+        POPUPTRIGGER "---" ID popup_hwb_3 AT (47 PrevTop 70 AUTO) LEFTANCHOR
+        LIST "---" "south" "east" "north" "west" "cast spell" "rest" "map" "change font" "known items" "teleport" "inventory" ID list_hwb_3 AT (PrevLeft PrevTop 58 1) NONUSABLE VISIBLEITEMS 12
+
+	LABEL "Memo Pad" AUTOID AT (4 PrevTop+12)
+        POPUPTRIGGER "---" ID popup_hwb_4 AT (PrevRight PrevTop 70 AUTO) LEFTANCHOR
+        LIST "---" "south" "east" "north" "west" "cast spell" "rest" "map" "change font" "known items" "teleport" "inventory" ID list_hwb_4 AT (PrevLeft PrevTop 58 1) NONUSABLE VISIBLEITEMS 12
+
+	LABEL "Calculator" AUTOID AT (40 PrevTop+12)
+        POPUPTRIGGER "---" ID popup_hwb_7 AT (PrevRight PrevTop 70 AUTO) LEFTANCHOR
+        LIST "---" "south" "east" "north" "west" "cast spell" "rest" "map" "change font" "known items" "teleport" "inventory" ID list_hwb_7 AT (PrevLeft PrevTop 58 1) NONUSABLE VISIBLEITEMS 12
+
+	LABEL "Find" AUTOID AT (40 PrevTop+12)
+        POPUPTRIGGER "---" ID popup_hwb_8 AT (81 PrevTop 70 AUTO) LEFTANCHOR
+        LIST "---" "south" "east" "north" "west" "cast spell" "rest" "map" "change font" "known items" "teleport" "inventory" ID list_hwb_8 AT (PrevLeft PrevTop 58 1) NONUSABLE VISIBLEITEMS 12
+
+        POPUPLIST ID popup_hwb_1 list_hwb_1
+        POPUPLIST ID popup_hwb_2 list_hwb_2
+        POPUPLIST ID popup_hwb_3 list_hwb_3
+        POPUPLIST ID popup_hwb_4 list_hwb_4
+        POPUPLIST ID popup_hwb_5 list_hwb_5
+        POPUPLIST ID popup_hwb_6 list_hwb_6
+        POPUPLIST ID popup_hwb_7 list_hwb_7
+        POPUPLIST ID popup_hwb_8 list_hwb_8
+
+END
+
+FORM ID PadForm AT (2 2 156 156)
+USABLE
+MODAL
+DEFAULTBTNID btn_pad_split
+BEGIN
+   TITLE "Dealer McDope's Pad"
+   LABEL "The Stash" AUTOID AT (3 15)
+   LABEL "The Cash" AUTOID AT (97 15)
+   LIST "Killer Speed" "Groovy Acid" "Monster Hash" "Trippy Shrooms" "Cool Coke" ID list_pad AT (0 30 70 55)
+   LABEL "100 bucks" AUTOID AT (95 30)
+   LABEL "250 bucks" AUTOID AT (PrevLeft PrevTop+11)
+   LABEL "500 bucks" AUTOID AT (PrevLeft PrevTop+11)
+   LABEL "1000 bucks" AUTOID AT (90 PrevTop+11)
+   LABEL "5000 bucks" AUTOID AT (PrevLeft PrevTop+11)
+   BUTTON "Buy" ID btn_pad_buy AT (5 141 35 AUTO)
+   BUTTON "Split" ID btn_pad_split AT (118 141 35 PrevHeight)
+END
+
+FORM ID ScoreForm AT (0 0 160 160)
+USABLE
+DEFAULTBTNID btn_score_done
+BEGIN
+   TITLE "You Have Died"
+
+   BUTTON "Done" ID btn_score_done AT (5 147 35 AUTO)
+   PUSHBUTTON "Show All" ID pbtn_score_all AT (PrevRight+5 PrevTop AUTO AUTO) GROUP 1
+   PUSHBUTTON "Winners" ID pbtn_score_win AT (PrevRight+1 PrevTop AUTO AUTO) GROUP 1
+ REPEATBUTTON "\001" ID repeat_score_up AT (144 145 12 AUTO) NOFRAME FONT 5 
+ REPEATBUTTON "\002" ID repeat_score_down AT (144 152 12 AUTO) NOFRAME FONT 5
+END
+
+FORM ID SadForm AT (0 0 160 160)
+USABLE
+BEGIN
+   TITLE "iLarn needs database"
+   LABEL "iLarn needs the iLarnDB.pdb database." AUTOID AT (2 15)
+   LABEL "If you did not receive it with iLarn.prc," AUTOID AT (2 PrevTop+11)
+   LABEL "download the iLarn zip file from" AUTOID AT (2 PrevTop+11)
+   LABEL "http://roguelike-palm." AUTOID AT (2 PrevTop+14)
+   LABEL "sourceforge.net/iLarn/" AUTOID AT (20 PrevTop+11)
+   LABEL "and install iLarnDB.pdb to your device." AUTOID AT (2 PrevTop+14)
+   LABEL "(Sorry for the inconvenience.)" AUTOID AT (2 PrevTop+11)
+END
+
+ALERT ID FontAlert
+WARNING
+BEGIN
+	TITLE "Wrong Version"
+	MESSAGE "Your version of iLarn does not match your OS version, so you can't change font.  If this makes you sad, you can download the right version at http://roguelike-palm.sourceforge.net"
+	BUTTON "Ok"
+END
+
+
+FORM ID MsgLogForm AT (2 2 156 156)
+USABLE
+MODAL
+DEFAULTBTNID btn_ml_ok
+BEGIN
+   TITLE "Message Log"
+   FIELD ID field_ml AT (5 15 146 121) NONEDITABLE MULTIPLELINES MAXCHARS 2048
+   REPEATBUTTON "\001" ID repeat_ml_up AT (144 140 10 AUTO) NOFRAME FONT 5 
+   REPEATBUTTON "\002" ID repeat_ml_down AT (144 148 10 AUTO) NOFRAME FONT 5 
+   BUTTON "Done" ID btn_ml_ok AT (5 140 37 AUTO)
+END
+

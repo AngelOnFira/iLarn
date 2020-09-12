@@ -1,0 +1,7 @@
+application { "iLarn" Larn }
+
+/* This app has four code resources: code #1 with all unannotated
+   functions, #2 with functions placed in the "sec_lib" section,
+   and #3 and #4 in "sec_1" and "sec_2".  */
+
+multiple code { sec_1 sec_2 sec_3 sec_4 sec_5 }

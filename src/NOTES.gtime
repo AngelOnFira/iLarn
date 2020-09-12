@@ -1,0 +1,36 @@
+Missing parts of gtime:
+
+A command to display elapsed time, in main.c
+
+    StrPrintF(buf, "\nElapsed time is %d.  You have %d mobuls left",
+	    (long)((env->gtime+99)/100+1),(long)((TIMELIMIT-env->gtime)/100));
+
+
+low bit used in movem.c... ok...
+
+nap? no.
+
+object.c !!!
+	time warp, case 7:
+	case 7:	
+		i = -rnd(1500) ;            /* time warp */
+	        if( is_male ) i += 300;    /* fast wie im richtigen Leben ;-*/
+		gtime += i;
+
+		if (i >= 0)
+		  lprintf("\nYou went forward in time by %d mobuls",
+                        (long)((i+99)/100));
+		else
+		  lprintf("\nYou went backward in time by %d mobuls",
+                        (long)(-(i+99)/100));
+		adjtime((long)i);/* adjust time for time warping */
+		return;
+    also, adjtime itself.
+
+when you go 'home', gtime is examined and compared to TIMELIMIT
+
+regen increments it... ok....
+hm, in savelev, we have "lasttime = gtime"
+also remember to use it in scores.c
+
+ok, store.c needs help with gemvalue.  put that in obj.c also!!

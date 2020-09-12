@@ -1,0 +1,270 @@
+Here are notes on porting Ularn to the Pilot
+
+
+'Ufortune' file has random fortunes in it
+'Uhelp' is just instructions and could be left out (but put in zip archive)
+'Umaps' - does this mean the maps are fixed?
+'Uscore' - file to keep score in I suppose
+
+bill.c - create the tax bill (after user has won) - SKIP IT for now
+  mailbill()  calls letter1 thru letter7
+
+config.c - "defines installation-dependent variables"
+  ... defines where the various files are stored, and wizards password
+
+create.c -
+  makeplayer()  called at the beginning of a game
+  newcavelevel(int x)  called when the player changes levels; may create level
+     may be canned; may contain treasure rooms; stocked with objects, monsters
+
+data.c - just defines a lot of crap.  objects, monsters, strings.
+
+diag.c - dungeon diagnostics, print out data for debugging - SKIP IT
+  
+display.c - puts stuff on the display
+  bottomline, bottomhp, bottomspell, bottomdo, bot_linex, bottomgold, bot_hpx,
+  bot_spellx, botside, botsub, draws(x0,x,y0,y), drawscreen, showcell(x,y),
+  showplayer, moveplayer, seemagic, etc.
+
+fortune.c - return a random fortune from 'Ufortune' file
+  fortune()  called in main.c and object.c
+
+global.c - gosh, lots of stuff
+  ... mainly to do with increasing and decreasing point values
+
+header.h - defines a lot of #defines and types
+
+help.c - display the 'Uhelp', welcome message, '--more--'  - SKIP IT
+
+io.c - I/O ... everything to do with manipulating the terminal.
+
+main.c
+  main(argc,argv)
+  ... and event loop and commands...
+
+monster.c - a lot of functions, listed in comment
+
+moreobj.c - altar, throne, chest, fountain
+
+movem.c - move monsters
+
+nap.c - take a nap - DONE
+
+object.c - 
+  lookforobject()  giant switch statement
+  finditem()  do you want to keep it
+  ..also stairs, teleport, using potions/scrolls,
+   pit, elevator, statue, book, statue, mirror, gold, + call-when-you-go-home
+
+regen.c - regenerate player points
+
+savelev.c - when a player leaves a level, its arrays are saved (for a while)
+  ... some data structures.  save and restore game.
+
+scores.c - create, read, write, display scoreboard
+
+signal.c - I think I can safely ignore it
+
+store.c - data and functions for store, school, bank, tax, dealer mcdope
+
+tok.c - pick a character; read and process options file; lexer used by main
+
+
+
+
+
+
+
+
+
+
+COMMANDS
+
+**SIMILAR TO ROGUE
+Movement - walk, run.
+^ identify a trap
+d drop an item
+i inventory
+. rest
+r read a scroll
+q quaff a potion
+W wear armor
+T take off armor
+w wield a weapon
+e eat something
+
+**NEW STUFF
+g give pack weight
+Z teleport yourself
+c cast a spell
+P give tax status
+D list all items found: potions, scrolls, known spells
+Esc? exit from store, trading post, school, or home (roll this into UI?)
+Esc? list available spells (should roll this into UI)
+
+Preferences should contain:
+preferred gender, name up to 34 characters, character class
+Database should contain:
+monster names (by letter) up to 34 characters
+
+
+Commands as seen in parse() of main.c:
+A: a wizard debug thing - skip it
+-: ?? movement  "zig-zag"
++: ?? movement  "zig-zig-zag-zag"
+P: "stay here and auto_pray", falls through its 'case' to .
+.: "stay here"
+w: wield
+W: wear
+r: read a scroll
+q: quaff a potion
+d: drop an object
+c: cast a spell
+i: "status" meaning inventory
+e: eat fortune cookie
+D: list spells and scrolls
+?: give help screen (do this in a menu)
+S: save (just do this when you leave the app)
+Z: teleport, if you know how
+^: identify traps
+#: um.  wizard thing
+_: um.  wizard thing
+T: take off shield,armor
+g: print weight of pack
+ : I'm not sure
+v: print version (do this in a menu)
+Q: quit (do this in a menu)
+^L: redraw screen
+P: print tax
+X: um.  wizard thing
+
+
+
+But there are many other cases in which getcharacter is used.
+(hm, gettokstr() is never used.)
+"do you really want to quit"
+"--more--"
+"which a-z do you want to verb?"
+"how much gold? * for all"
+"cast which spell?"
+dirsub() -- "in what direction"
+"genocide what monster?"
+"do you (p)ray or (d)esecrate?"
+"do you give (m)oney or (j)ust pray?"
+"how much do you donate?"
+"do you (p)ry off jewels, (s)it down"
+"do you (s)it down"
+"do you (t)ake the chest, try to (o)pen it"
+"do you (d)rink at the fountain, (w)ash yourself"
+"do you (r)ub the lamp, (t)ake it, or (i)gnore it"
+"what spell would you like [to learn]?"
+"do you (g)o inside {college, store, post, hideout, lrs, home}, (i) stay here"
+"do you (c)lose the open door"
+"do you try to (o)pen the closed door"
+"you have found an entrance do you (g)o inside"
+"you have found a shaft, do you (c)limb {down,up}"
+"you have found some speed, do you (s)nort it, (t)ake it, or (i)gnore it"
+"you have found magic mushrooms, do you (e)at, (t)ake, or (i)gnore"
+"you have found some lsd, do you (e)at, (t)ake, or (i)gnore"
+"you have found some hashish, do you (s)moke, (t)ake, or (i)gnore"
+"you have found some cocaine, do you (s)nort it, (t)ake it, or (i)gnore it"
+"you have found foo, do you want to (t)ake it"
+"do you (s)tay here or {go (u)p, go (d)own} the stairs"
+"do you (d)rink the potion, (t)ake it, (s)pill it"
+"do you (r)ead the scroll, (b)urn it, (t)ake it"
+"do you (r)ead the book, (t)ake it"
+"do you (e)at the cookie, (t)ake it"
+selecting item at store to buy
+selecting class at school to take
+selecting stone to sell
+selecting item to sell at trading post
+selecting drug to buy at pad
+selecting character class to create
+ 
+
+I think a lot, maybe all, of those could be converted to popups and stuff.
+
+
+
+
+OK how about the data structures going on here.
+
+
+
+
+
+
+
+
+
+
+PLAYING THE GAME
+
+                The Addiction of Ularn
+Pick a character class...
+                    Character
+
+                a)  Ogre
+                b)  Wizard
+                c)  Klingon
+                d)  Elf
+                e)  Rogue
+                f)  Geek
+                g)  Dwarf
+                h)  Rambo
+
+So, what are ya? 
+
+
+
+
+---
+
+                                                            +
+                         S
+
+                                                           E
+
+                    H
+       V             $
+                                                        =
+
+
+                                                           L
+
+---
+Spells:  1( 1)  AC: 4    WC: 0    Level 1  Exp: 0           novice explorer  
+HP:  14( 14) STR=14 INT=12 WIS=4  CON=12 DEX=8  CHA=3  LV: H  Gold: 0     
+(blank line)
+(some lines for messages)
+
+---
+67 wide... 17 deep
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,###,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, x ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,# #,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Spells:  1( 1)  AC: 4    WC: 0    Level 1  Exp: 0           novice explorer  
+HP:  14( 14) STR=14 INT=12 WIS=4  CON=12 DEX=8  CHA=3  LV: 1  Gold: 0     
+
+(I have represented me as an X - really I am a highlighted ' '.)
+
+
+
+As a historical matter, I am cleaning up old pilot-rogue directories
+(before I moved THAT to cvs...); early partial versions were
+mid-August, 1998, and the first "full" one was Sept 1 1998.  gosh has
+it been that long?
